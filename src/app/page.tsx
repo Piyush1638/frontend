@@ -1,138 +1,72 @@
 "use client";
-import { useState } from "react";
+import Image from "next/image";
+import React from "react";
+import ThemeToggler from "@/components/ThemeToggler";
+import Link from "next/link";
+import Logo from "@/components/Logo";
 
-interface DetectionResponse {
-  filename: string;
-  people_count: number;
-  image: string;
-}
-
-export default function Home() {
-  const [images, setImages] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [detectionResults, setDetectionResults] = useState<DetectionResponse[]>(
-    []
-  );
-  const [loading, setLoading] = useState<boolean>(false);
-
-  const handleFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ): void => {
-    if (event.target.files) {
-      const filesArray = Array.from(event.target.files);
-      setImages(filesArray);
-      setImagePreviews(filesArray.map((file) => URL.createObjectURL(file))); // Create preview URLs
-    }
-  };
-
-  const handleUpload = async (): Promise<void> => {
-    if (images.length === 0) {
-      alert("Please select images!");
-      return;
-    }
-
-    setLoading(true);
-    const formData = new FormData();
-    images.forEach((image) => formData.append("images", image));
-
-    try {
-      const response = await fetch("http://127.0.0.1:8000/detect/", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to detect people");
-      }
-
-      const data = await response.json();
-      console.log("API Response:", data); // Debugging log
-
-      // Extract `detections` array properly
-      setDetectionResults(
-        Array.isArray(data.detections) ? data.detections : []
-      );
-    } catch (error) {
-      console.error("Error detecting people:", error);
-      setDetectionResults([]); // Reset results on error
-    } finally {
-      setLoading(false);
-    }
-  };
-
+const page = () => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#4e54c8] text-white p-6">
-      <h1 className="text-3xl font-bold mb-6">People Detection App</h1>
+    <main className="min-h-screen w-full bg-[url(/white_theme.jpg)] dark:bg-[url(/dark3.png)] bg-center bg-no-repeat bg-cover">
+      <div className="w-full flex justify-between p-4 sm:p-6">
+        <Logo />
+        <ThemeToggler />
+      </div>
 
-      <div className="area">
-			<ul className="circles">
-				<li></li>
-				<li></li>
-				<li></li>
-				<li></li>
-				<li></li>
-				<li></li>
-				<li></li>
-				<li></li>
-				<li></li>
-				<li></li>
-			</ul>
-		</div>
+      {/* Hero Section */}
+      <div className="w-full min-h-screen px-4 sm:px-6 md:px-10 py-8 flex flex-col lg:flex-row items-center gap-10">
+        {/* Left Content */}
+        <div className="flex flex-col gap-5 w-full lg:w-1/2">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold dark:text-white leading-tight">
+              AI Powered-Robust
+            </h1>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold dark:text-white leading-tight">
+              Human Detection
+            </h1>
+          </div>
+          <p className="text-lg sm:text-xl md:text-lg dark:text-gray-300">
+            Upload an image and let our AI model detect humans in seconds. Fast,
+            reliable, and privacy-focused.
+          </p>
+          <Link
+            href="/detection"
+            className="bg-green-600 font-semibold text-lg sm:text-xl hover:bg-green-700 text-white rounded-xl w-fit px-6 py-3"
+          >
+            Try Now
+          </Link>
+        </div>
 
-      <label className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg mb-4">
-        Select Images
-        <input
-          type="file"
-          onChange={handleFileChange}
-          accept="image/*"
-          multiple
-          className="hidden"
-        />
-      </label>
-
-      <div className="flex items-center justify-center flex-wrap gap-4 mt-4">
-        {imagePreviews.map((preview, index) => (
-          <img
-            key={index}
-            src={preview}
-            alt={`Uploaded Preview ${index}`}
-            className="w-80 h-full object-cover rounded-lg shadow-lg"
+        {/* Right Images */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full lg:w-1/2">
+          <Image
+            src="/thumbnail_2.png"
+            alt="hero"
+            height={500}
+            width={300}
+            className="rounded-3xl w-full h-auto object-cover"
           />
-        ))}
-      </div>
+          <Image
+            src="/thumbnail.png"
+            alt="thumbnail"
+            height={300}
+            width={300}
+            className="rounded-3xl w-full h-auto object-cover"
+          />
 
-      <button
-        onClick={handleUpload}
-        className="mt-4 px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg disabled:bg-gray-600"
-        disabled={loading}
-      >
-        {loading ? "Processing..." : "Upload & Detect"}
-      </button>
-
-      <div className="flex flex-wrap gap-4 mt-6">
-        {detectionResults.length > 0 ? (
-          detectionResults.map((result, index) => (
-            <div key={index} className="text-center w-80">
-              {" "}
-              {/* Adjust width as needed */}
-              <div className="relative aspect-[3/2] rounded-lg shadow-lg overflow-hidden">
-                <img
-                  src={`data:image/png;base64,${result.image}`}
-                  alt={`Detected ${result.filename}`}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <p className="text-lg font-semibold mt-2">Image: {index}</p>
-              <p className="mt-1 text-lg font-semibold">
-                People:{" "}
-                <span className="text-yellow-400">{result.people_count}</span>
-              </p>
-            </div>
-          ))
-        ) : (
-          <p className="text-gray-400 mt-4">No results found.</p>
-        )}
+          <div className="sm:col-span-2 w-full flex justify-center sm:justify-end pt-4 sm:pt-10">
+            <Image
+              src="/thumbnail_img.png"
+              alt="hero"
+              height={500}
+              width={300}
+              className="rounded-3xl w-full sm:w-2/3 h-auto object-cover"
+            />
+          </div>
+        </div>
       </div>
-    </div>
+    </main>
   );
-}
+};
+
+export default page;
