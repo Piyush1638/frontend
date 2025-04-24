@@ -4,8 +4,8 @@ const ThemeToggler: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
 
   // Function to handle theme change when the switch is toggled
-  const handleToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
-    toggleTheme(); // Toggle the theme using context function
+  const handleToggle = () => {
+    toggleTheme();
   };
 
   return (

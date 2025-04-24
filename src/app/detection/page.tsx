@@ -1,5 +1,4 @@
 "use client";
-import BackgroundAnimations from "@/components/BackgroundAnimations";
 import Logo from "@/components/Logo";
 import LogoutButton from "@/components/LogoutButton";
 import { useRouter } from "next/navigation";
